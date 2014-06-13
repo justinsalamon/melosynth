@@ -4,24 +4,24 @@ import argparse, os, wave
 import numpy as np
 
 _translen = 0.002 # in seconds
-
+# _translen = 0.5 # in seconds
 
 def wavwrite(x,filename,fs=44100,N=16):
     '''
-    Synthesize signal into a wavefile on disk
+    Synthesize signal x into a wavefile on disk
 
     :parameters:
     - x : numpy.array
-    Signal to synthesize. 1 column for mono, 2 columns for stereo
+    Signal to synthesize.
 
     - filename: string
-    Path of output wavfile
+    Path of output wavfile.
 
     - fs : int
-    Sampling frequency, by default 44100
+    Sampling frequency, by default 44100.
 
     - N : int
-    Bit depth, by default 16
+    Bit depth, by default 16.
     '''
 
     maxVol=2**15-1.0 # maximum amplitude
@@ -84,7 +84,20 @@ def loadmel(inputfile,delimiter=None):
 
 def melosynth(inputfile, outputfile, useneg, fs):
     '''
-    TODO
+    Load pitch sequence from  a txt/csv file and synthesize it into a .wav
+
+    :parameters:
+    - inputfile : str
+    Path to input file containing pitch sequence.
+    - outputfiles: str
+    Path to output wav file. If not outputfile is provided a file will be
+    created with the same path/name as inputfile but ending with .wav
+    - useneg : bool
+    By default, negative frequency values (unvoiced frames) are synthesized as
+    silence. If useneg is set to True, these frames will be synthesized as
+    voiced.
+    - fs : int
+    Sampling frequency for the synthesized file. Set to 11025 unless specified.
     '''
     if fs is None:
         fs = 11025
@@ -98,6 +111,11 @@ def melosynth(inputfile, outputfile, useneg, fs):
         freqs = np.abs(freqs)
     else:
         freqs[freqs<0] = 0
+    # Impute values if start time > 0
+    # if times[0] > 0:
+    #     times = np.insert(times,0,times[0])
+    #     freqs = np.insert(freqs,0,0)
+
 
     print 'Generating wave...'
     signal = []
@@ -123,6 +141,8 @@ def melosynth(inputfile, outputfile, useneg, fs):
             phase = phases[-1]
             # Append samples
             signal.extend(samples)
+        # else:
+        #     print "skippy", t
 
         t_prev = t
         f_prev = f
