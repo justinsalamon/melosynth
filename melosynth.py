@@ -2,7 +2,7 @@
 
 """
 @file melosynth.py
-@author  Justin Salamon <justin.salamon@nyu.edu>
+@author  Justin Salamon <www.justinsalamon.com>
 @version 0.1
 
 @section DESCRIPTION
@@ -113,7 +113,7 @@ def wavwrite(x,filename,fs=44100,N=16):
     Bit depth, by default 16.
     '''
 
-    maxVol=2**15-1.0 # maximum amplitude
+    maxVol = 2**15-1.0 # maximum amplitude
     x = x * maxVol # scale x
     # convert x to string format expected by wave
     signal = "".join((wave.struct.pack('h', item) for item in x))
@@ -156,7 +156,7 @@ def loadmel(inputfile,delimiter=None):
     if os.path.splitext(inputfile)[1] == '.csv':
         delimiter = ','
     try:
-        data = np.loadtxt(inputfile,'float','#',delimiter)
+        data = np.loadtxt(inputfile, 'float', '#', delimiter)
     except ValueError:
         raise ValueError('Error: could not load %s, please check if it is in \
         the correct 2 column format' % os.path.basename(inputfile))
@@ -165,7 +165,7 @@ def loadmel(inputfile,delimiter=None):
     data = data.T
     if data.shape[0] != 2:
         raise ValueError('Error: %s should be of dimension (2,x), but is of \
-        dimension %s' % (os.path.basename(inputfile),data.shape))
+        dimension %s' % (os.path.basename(inputfile), data.shape))
     times = data[0]
     freqs= data[1]
     return times, freqs
@@ -220,8 +220,8 @@ def melosynth(inputfile, outputfile, fs, nHarmonics, square, useneg):
     if times[0] > 0:
         estimated_hop = np.median(np.diff(times))
         prev_time = max(times[0] - estimated_hop, 0)
-        times = np.insert(times,0,prev_time)
-        freqs = np.insert(freqs,0,0)
+        times = np.insert(times, 0, prev_time)
+        freqs = np.insert(freqs, 0, 0)
 
 
     print 'Generating wave...'
@@ -238,14 +238,14 @@ def melosynth(inputfile, outputfile, fs, nHarmonics, square, useneg):
 
         if nsamples > 0:
             # calculate transition length (in samples)
-            translen_sm = float(min(np.round(translen*fs),nsamples))
+            translen_sm = float(min(np.round(translen*fs), nsamples))
 
             # Generate frequency series
             freq_series = np.ones(nsamples) * f_prev
 
             # Interpolate between non-zero frequencies
             if f_prev >  0 and f > 0:
-                freq_series += np.minimum(np.arange(nsamples)/translen_sm,1) * \
+                freq_series += np.minimum(np.arange(nsamples)/translen_sm, 1) *\
                                (f - f_prev)
             elif f > 0:
                 freq_series = np.ones(nsamples) * f
@@ -265,9 +265,9 @@ def melosynth(inputfile, outputfile, fs, nHarmonics, square, useneg):
 
             # Fade in/out and silence
             if f_prev == 0 and f > 0:
-                samples *= np.minimum(np.arange(nsamples)/translen_sm,1)
+                samples *= np.minimum(np.arange(nsamples)/translen_sm, 1)
             if f_prev > 0 and f == 0:
-                samples *= np.maximum(1 - (np.arange(nsamples)/translen_sm),0)
+                samples *= np.maximum(1 - (np.arange(nsamples)/translen_sm), 0)
             if f_prev == 0 and f == 0:
                 samples *= 0
 
@@ -282,33 +282,33 @@ def melosynth(inputfile, outputfile, fs, nHarmonics, square, useneg):
     signal *= 0.8 / float(np.max(signal))
 
     print 'Saving wav file...'
-    wavwrite(np.asarray(signal),outputfile,fs)
+    wavwrite(np.asarray(signal), outputfile, fs)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Synthesize pitch sequence.")
-    parser.add_argument("inputfile", help="Path to input file containing the \
-                        pitch sequence")
-    parser.add_argument("--output", help="Path to output wav file. If \
-                        not specified a file will be created with the same \
-                        path/name as inputfile but ending with \".wav\".")
-    parser.add_argument("--fs", default=16000, help="Sampling frequency for the\
-                        synthesized file. If not specified the default value \
-                        of is 16000 Hz is used.")
-    parser.add_argument("--nHarmonics", default=1, help="Number of harmonics \
-                        (including the fundamental) to use in the synthesis \
-                        (default is 1). As the number is increased the wave \
-                        will become more sawtooth-like.")
+    parser.add_argument("inputfile", help="Path to input file containing the "
+                        "pitch sequence")
+    parser.add_argument("--output", help="Path to output wav file. If "
+                        "not specified a file will be created with the same "
+                        "path/name as inputfile but ending with \".wav\".")
+    parser.add_argument("--fs", default=16000, help="Sampling frequency for the"
+                        "synthesized file. If not specified the default value "
+                        "of is 16000 Hz is used.")
+    parser.add_argument("--nHarmonics", default=1, help="Number of harmonics "
+                        "(including the fundamental) to use in the synthesis "
+                        "(default is 1). As the number is increased the wave "
+                        "will become more sawtooth-like.")
     parser.add_argument("--square", default = False, dest='square',
-                        action='store_const', const=True, help="Converge to \
-                        square wave instead of sawtooth as the number of \
-                        harmonics is increased.")
+                        action='store_const', const=True, help="Converge to "
+                        "square wave instead of sawtooth as the number of "
+                        "harmonics is increased.")
     parser.add_argument("--useneg", default = False, dest='useneg',
-                        action='store_const', const=True, help="By default, \
-                        negative frequency values (unvoiced frames) are \
-                        synthesized as silence. Setting the useneg option \
-                        will synthesize these frames using their absolute \
-                        values (i.e. as voiced frames).")
+                        action='store_const', const=True, help="By default, "
+                        "negative frequency values (unvoiced frames) are "
+                        "synthesized as silence. Setting the --useneg option "
+                        "will synthesize these frames using their absolute "
+                        "values (i.e. as voiced frames).")
 
     args = parser.parse_args()
     if args.inputfile is not None:
