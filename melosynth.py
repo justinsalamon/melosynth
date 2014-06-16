@@ -7,7 +7,8 @@ _translen = 0.002 # in seconds
 
 def wavwrite(x,filename,fs=44100,N=16):
     '''
-    Synthesize signal x into a wavefile on disk
+    Synthesize signal x into a wavefile on disk. The values of x must be in the
+    range [-1,1].
 
     :parameters:
     - x : numpy.array
@@ -41,7 +42,7 @@ def wavwrite(x,filename,fs=44100,N=16):
 
 def loadmel(inputfile,delimiter=None):
     '''
-    Load a pitch time series from a file.
+    Load a pitch (frequency) time series from a file.
 
     The pitch file must be in the following format:
     Double-column - each line contains two values, separated by ``delimiter``:
@@ -81,13 +82,13 @@ def loadmel(inputfile,delimiter=None):
     return times, freqs
 
 
-def melosynth(inputfile, outputfile, fs, nHarmonics, useneg):
+def melosynth(inputfile, outputfile, fs, nHarmonics, square, useneg):
     '''
     Load pitch sequence from  a txt/csv file and synthesize it into a .wav
 
     :parameters:
     - inputfile : str
-    Path to input file containing pitch sequence.
+    Path to input file containing the pitch sequence.
 
     - outputfile: str
     Path to output wav file. If outputfile is None a file will be
@@ -97,8 +98,13 @@ def melosynth(inputfile, outputfile, fs, nHarmonics, useneg):
     Sampling frequency for the synthesized file.
 
     - nHarmonics : int
-    Number of harmonic frequencies (including the fundamental) to use for the
-    synthesis.
+    Number of harmonics (including the fundamental) to use in the synthesis
+    (default is 1). As the number is increased the wave will become more
+    sawtooth-like.
+
+    - square : bool
+    When set to true, the waveform will converge to a square wave instead of
+    a sawtooth as the number of harmonics is increased.
 
     - useneg : bool
     By default, negative frequency values (unvoiced frames) are synthesized as
@@ -132,7 +138,6 @@ def melosynth(inputfile, outputfile, fs, nHarmonics, useneg):
     print 'Generating wave...'
     signal = []
 
-    amp = 0.8**(np.arange(nHarmonics)+1)
     phase = np.zeros(nHarmonics)
     f_prev = 0
     t_prev = 0
@@ -150,18 +155,21 @@ def melosynth(inputfile, outputfile, fs, nHarmonics, useneg):
 
             # Interpolate between non-zero frequencies
             if f_prev >  0 and f > 0:
-                freq_series += np.minimum(np.arange(nsamples)/translen,1) * (f - f_prev)
+                freq_series += np.minimum(np.arange(nsamples)/translen,1) * \
+                               (f - f_prev)
             elif f > 0:
                 freq_series = np.ones(nsamples) * f
 
             # Repeat for each harmonic
             samples = np.zeros(nsamples)
             for h in range(nHarmonics):
+                # Determine harmonic num (h+1 for sawtooth, 2h+1 for square)
+                hnum = 2*h+1 if square else h+1
                 # Compute the phase of each sample
-                phasors = 2 * np.pi * (h+1) * freq_series / float(fs)
+                phasors = 2 * np.pi * (hnum) * freq_series / float(fs)
                 phases = phase[h] + np.cumsum(phasors)
                 # Compute sample values and add
-                samples += amp[h] * np.sin(phases)
+                samples += np.sin(phases) / (hnum)
                 # Update phase
                 phase[h] = phases[-1]
 
@@ -188,13 +196,31 @@ def melosynth(inputfile, outputfile, fs, nHarmonics, useneg):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Synthesize pitch sequence")
-    parser.add_argument("inputfile", help="Path to file with pitch values")
-    parser.add_argument("--output", help="Path to output file (wav)")
-    parser.add_argument("--fs", default=11025, help="Specify the sampling frequency for the output (default is 11025 Hz)")
-    parser.add_argument("--nHarmonics", default=1, help="Number of harmonics (including the fundamental) to use in the synthesis (default is 1)")
-    parser.add_argument("--useneg", default = False, dest='useneg', action='store_const', const=True, help="Synthesize negative values (unvoiced frames)")
+    parser = argparse.ArgumentParser(description="Synthesize pitch sequence.")
+    parser.add_argument("inputfile", help="Path to input file containing the \
+                        pitch sequence")
+    parser.add_argument("--output", help="Path to output wav file. If \
+                        not specified a file will be created with the same \
+                        path/name as inputfile but ending with \".wav\".")
+    parser.add_argument("--fs", default=11025, help="Sampling frequency for the\
+                        synthesized file. If not specified the default value \
+                        of is 11025 Hz is used.")
+    parser.add_argument("--nHarmonics", default=1, help="Number of harmonics \
+                        (including the fundamental) to use in the synthesis \
+                        (default is 1). As the number is increased the wave \
+                        will become more sawtooth-like.")
+    parser.add_argument("--square", default = False, dest='square',
+                        action='store_const', const=True, help="Converge to \
+                        square wave instead of sawtooth as the number of \
+                        harmonics is increased.")
+    parser.add_argument("--useneg", default = False, dest='useneg',
+                        action='store_const', const=True, help="By default, \
+                        negative frequency values (unvoiced frames) are \
+                        synthesized as silence. Setting the useneg option \
+                        will synthesize these frames using their absolute \
+                        values (i.e. as voiced frames).")
 
     args = parser.parse_args()
     if args.inputfile is not None:
-        melosynth(args.inputfile, args.output, args.fs, args.nHarmonics, args.useneg)
+        melosynth(args.inputfile, args.output, args.fs, args.nHarmonics,
+                  args.square, args.useneg)
