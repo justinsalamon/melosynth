@@ -3,7 +3,6 @@
 import argparse, os, wave
 import numpy as np
 
-_translen = 0.002 # in seconds
 
 def wavwrite(x,filename,fs=44100,N=16):
     '''
@@ -138,9 +137,10 @@ def melosynth(inputfile, outputfile, fs, nHarmonics, square, useneg):
     print 'Generating wave...'
     signal = []
 
-    phase = np.zeros(nHarmonics)
-    f_prev = 0
-    t_prev = 0
+    translen = 0.002 # duration (in seconds) for fade in/out and freq interp
+    phase = np.zeros(nHarmonics) # start phase for all harmonics
+    f_prev = 0 # previous frequency
+    t_prev = 0 # previous timestamp
     for t,f in zip(times, freqs):
 
         # Compute number of samples to synthesize
@@ -148,14 +148,14 @@ def melosynth(inputfile, outputfile, fs, nHarmonics, square, useneg):
 
         if nsamples > 0:
             # calculate transition length (in samples)
-            translen = float(min(np.round(_translen*fs),nsamples))
+            translen_sm = float(min(np.round(translen*fs),nsamples))
 
             # Generate frequency series
             freq_series = np.ones(nsamples) * f_prev
 
             # Interpolate between non-zero frequencies
             if f_prev >  0 and f > 0:
-                freq_series += np.minimum(np.arange(nsamples)/translen,1) * \
+                freq_series += np.minimum(np.arange(nsamples)/translen_sm,1) * \
                                (f - f_prev)
             elif f > 0:
                 freq_series = np.ones(nsamples) * f
@@ -175,9 +175,9 @@ def melosynth(inputfile, outputfile, fs, nHarmonics, square, useneg):
 
             # Fade in/out and silence
             if f_prev == 0 and f > 0:
-                samples *= np.minimum(np.arange(nsamples)/translen,1)
+                samples *= np.minimum(np.arange(nsamples)/translen_sm,1)
             if f_prev > 0 and f == 0:
-                samples *= np.maximum(1 - (np.arange(nsamples)/translen),0)
+                samples *= np.maximum(1 - (np.arange(nsamples)/translen_sm),0)
             if f_prev == 0 and f == 0:
                 samples *= 0
 
