@@ -1,12 +1,9 @@
 MeloSynth
 =========
 
-MeloSynth: synthesize a melody.
-Author: Justin Salamon <justin.salamon@nyu.edu>
+MeloSynth: synthesize a melody. <br/>
+Author: Justin Salamon <http://www.justinsalamon.com> <br/>
 Version: 0.1
-
-DESCRIPTION
-===========
 
 MeloSynth is a python script to synthesize melodies represented as a sequence of
 pitch (frequency) values. It was written to synthesize the output of the
@@ -48,16 +45,18 @@ EXAMPLES
 ========
 
 Basic usage, without any options:
-
+```
 >python melosynth.py ~/Documents/daisy3_melodia.csv
+```
 
 This Will create a file called daisy3_melodia.wav in the same folder as the
 input file (~/Documents/) and use all the default parameter values for the
 synthesis.
 
 Advanced usage, including all options:
-
+```
 >python melosynth.py ~/Documents/daisy3_melodia.csv --output ~/Music/mynewfile.wav --fs 44100 --nHarmonics 10 --square --useneg
+```
 
 Here we are providing a specified path for the output instead of the default
 location. Next we specify the sample rate for the output (44.1 kHz) instead of
@@ -71,15 +70,13 @@ synthesized as silence (which is the default behaviour).
 
 INSTALLATION
 ============
-Simply download the script and run it from your terminal as instructed above.
-
+Simply download the script and run it from your terminal as instructed above. <br/>
 Dependencies: python (tested on 2.7) and numpy (<http://www.numpy.org/>).
 
 LICENSE
 =======
 
-MeloSynth: synthesize a melody
-
+MeloSynth: synthesize a melody <br/>
 Copyright (C) 2014 Justin Salamon.
 
 MeloSynth is free software: you can redistribute it and/or modify it under the
