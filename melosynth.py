@@ -1,5 +1,39 @@
 # CREATED: 6/13/14 10:57 AM by Justin Salamon <justin.salamon@nyu.edu>
 
+"""
+@file melosynth.py
+@author  Justin Salamon <justin.salamon@nyu.edu>
+@version 0.1
+
+@section DESCRIPTION
+
+MeloSynth: synthesize a melody
+
+MeloSynth is a python script to synthesize melodies represented as a sequence of
+pitch (frequency) values. It was written to synthesize the output of the
+MELODIA Melody Extraction Vamp Plugin (http://mtg.upf.edu/technologies/melodia),
+but can be used to synthesize any pitch sequence represented as a two-column txt
+or csv file where the first column contains timestamps and the second contains
+the corresponding frequency values in Hertz.
+
+@section LICENSE
+
+MeloSynth: synthesize a melody
+Copyright (C) 2014 Justin Salamon.
+
+MeloSynth is free software: you can redistribute it and/or modify it under the
+terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+MeloSynth is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program. If not, see <http://www.gnu.org/licenses/>.
+"""
+
 import argparse, os, wave
 import numpy as np
 
