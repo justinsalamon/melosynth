@@ -32,7 +32,7 @@ optional arguments:
                         be created with the same path/name as inputfile but
                         ending with ".wav".
   --fs FS               Sampling frequency for the synthesized file. If not
-                        specified the default value of is 16000 Hz is used.
+                        specified the default value of 16000 Hz is used.
   --nHarmonics NHARMONICS
                         Number of harmonics (including the fundamental) to use
                         in the synthesis (default is 1). As the number is
@@ -296,7 +296,7 @@ if __name__ == "__main__":
                         "path/name as inputfile but ending with \".wav\".")
     parser.add_argument("--fs", default=16000, help="Sampling frequency for the"
                         "synthesized file. If not specified the default value "
-                        "of is 16000 Hz is used.")
+                        "of 16000 Hz is used.")
     parser.add_argument("--nHarmonics", default=1, help="Number of harmonics "
                         "(including the fundamental) to use in the synthesis "
                         "(default is 1). As the number is increased the wave "
