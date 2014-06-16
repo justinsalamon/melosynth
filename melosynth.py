@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # CREATED: 6/13/14 10:57 AM by Justin Salamon <justin.salamon@nyu.edu>
 
 """
@@ -90,11 +91,12 @@ You should have received a copy of the GNU General Public License along with
 this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-import argparse, os, wave
+import argparse, os, wave, logging
 import numpy as np
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 
 
-def wavwrite(x,filename,fs=44100,N=16):
+def wavwrite(x, filename, fs=44100, N=16):
     '''
     Synthesize signal x into a wavefile on disk. The values of x must be in the
     range [-1,1].
@@ -129,7 +131,7 @@ def wavwrite(x,filename,fs=44100,N=16):
     wv.close()
 
 
-def loadmel(inputfile,delimiter=None):
+def loadmel(inputfile, delimiter=None):
     '''
     Load a pitch (frequency) time series from a file.
 
@@ -167,7 +169,7 @@ def loadmel(inputfile,delimiter=None):
         raise ValueError('Error: %s should be of dimension (2,x), but is of \
         dimension %s' % (os.path.basename(inputfile), data.shape))
     times = data[0]
-    freqs= data[1]
+    freqs = data[1]
     return times, freqs
 
 
@@ -208,14 +210,14 @@ def melosynth(inputfile, outputfile, fs, nHarmonics, square, useneg):
         outputfile = inputfile[:-3] + "wav"
 
     # Load pitch sequence
-    print 'Loading data...'
-    times, freqs= loadmel(inputfile)
+    logging.info('Loading data...')
+    times, freqs = loadmel(inputfile)
 
     # Preprocess pitch sequence
     if useneg:
         freqs = np.abs(freqs)
     else:
-        freqs[freqs<0] = 0
+        freqs[freqs < 0] = 0
     # Impute silence if start time > 0
     if times[0] > 0:
         estimated_hop = np.median(np.diff(times))
@@ -224,14 +226,14 @@ def melosynth(inputfile, outputfile, fs, nHarmonics, square, useneg):
         freqs = np.insert(freqs, 0, 0)
 
 
-    print 'Generating wave...'
+    logging.info('Generating wave...')
     signal = []
 
     translen = 0.002 # duration (in seconds) for fade in/out and freq interp
     phase = np.zeros(nHarmonics) # start phase for all harmonics
     f_prev = 0 # previous frequency
     t_prev = 0 # previous timestamp
-    for t,f in zip(times, freqs):
+    for t, f in zip(times, freqs):
 
         # Compute number of samples to synthesize
         nsamples = np.round((t - t_prev) * fs)
@@ -244,7 +246,7 @@ def melosynth(inputfile, outputfile, fs, nHarmonics, square, useneg):
             freq_series = np.ones(nsamples) * f_prev
 
             # Interpolate between non-zero frequencies
-            if f_prev >  0 and f > 0:
+            if f_prev > 0 and f > 0:
                 freq_series += np.minimum(np.arange(nsamples)/translen_sm, 1) *\
                                (f - f_prev)
             elif f > 0:
@@ -281,7 +283,7 @@ def melosynth(inputfile, outputfile, fs, nHarmonics, square, useneg):
     signal = np.asarray(signal)
     signal *= 0.8 / float(np.max(signal))
 
-    print 'Saving wav file...'
+    logging.info('Saving wav file...')
     wavwrite(np.asarray(signal), outputfile, fs)
 
 
@@ -299,11 +301,11 @@ if __name__ == "__main__":
                         "(including the fundamental) to use in the synthesis "
                         "(default is 1). As the number is increased the wave "
                         "will become more sawtooth-like.")
-    parser.add_argument("--square", default = False, dest='square',
+    parser.add_argument("--square", default=False, dest='square',
                         action='store_const', const=True, help="Converge to "
                         "square wave instead of sawtooth as the number of "
                         "harmonics is increased.")
-    parser.add_argument("--useneg", default = False, dest='useneg',
+    parser.add_argument("--useneg", default=False, dest='useneg',
                         action='store_const', const=True, help="By default, "
                         "negative frequency values (unvoiced frames) are "
                         "synthesized as silence. Setting the --useneg option "
