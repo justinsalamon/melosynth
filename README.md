@@ -49,7 +49,7 @@ Basic usage, without any options:
 >python melosynth.py ~/Documents/daisy3_melodia.csv
 ```
 
-This Will create a file called daisy3_melodia.wav in the same folder as the
+This will create a file called daisy3_melodia.wav in the same folder as the
 input file (~/Documents/) and use all the default parameter values for the
 synthesis.
 
