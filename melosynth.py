@@ -4,7 +4,6 @@ import argparse, os, wave
 import numpy as np
 
 _translen = 0.002 # in seconds
-# _translen = 0.5 # in seconds
 
 def wavwrite(x,filename,fs=44100,N=16):
     '''
@@ -44,10 +43,10 @@ def loadmel(inputfile,delimiter=None):
     '''
     Load a pitch time series from a file.
 
-    The pitch file must be of the following format:
-    - Double-column.  Each line contains two values, separated by ``delimiter``: the
-    first contains the timestamp, and the second contains its corresponding
-    numeric value.
+    The pitch file must be in the following format:
+    Double-column - each line contains two values, separated by ``delimiter``:
+    the first contains the timestamp, and the second contains its corresponding
+    frequency value in Hz.
 
     :parameters:
     - inputfile : str
@@ -82,45 +81,59 @@ def loadmel(inputfile,delimiter=None):
     return times, freqs
 
 
-def melosynth(inputfile, outputfile, useneg, fs):
+def melosynth(inputfile, outputfile, fs, nHarmonics, useneg):
     '''
     Load pitch sequence from  a txt/csv file and synthesize it into a .wav
 
     :parameters:
     - inputfile : str
     Path to input file containing pitch sequence.
-    - outputfiles: str
-    Path to output wav file. If not outputfile is provided a file will be
-    created with the same path/name as inputfile but ending with .wav
+
+    - outputfile: str
+    Path to output wav file. If outputfile is None a file will be
+    created with the same path/name as inputfile but ending with ".wav"
+
+    - fs : int
+    Sampling frequency for the synthesized file.
+
+    - nHarmonics : int
+    Number of harmonic frequencies (including the fundamental) to use for the
+    synthesis.
+
     - useneg : bool
     By default, negative frequency values (unvoiced frames) are synthesized as
-    silence. If useneg is set to True, these frames will be synthesized as
-    voiced.
-    - fs : int
-    Sampling frequency for the synthesized file. Set to 11025 unless specified.
+    silence. If useneg is set to True, these frames will be synthesized using
+    their absolute values (i.e. as voiced frames).
     '''
-    if fs is None:
-        fs = 11025
+
+    # Preprocess input parameters
+    fs = int(float(fs))
+    nHarmonics = int(nHarmonics)
     if outputfile is None:
         outputfile = inputfile[:-3] + "wav"
 
     # Load pitch sequence
     print 'Loading data...'
     times, freqs= loadmel(inputfile)
+
+    # Preprocess pitch sequence
     if useneg:
         freqs = np.abs(freqs)
     else:
         freqs[freqs<0] = 0
-    # Impute values if start time > 0
-    # if times[0] > 0:
-    #     times = np.insert(times,0,times[0])
-    #     freqs = np.insert(freqs,0,0)
+    # Impute silence if start time > 0
+    if times[0] > 0:
+        estimated_hop = np.median(np.diff(times))
+        prev_time = max(times[0] - estimated_hop, 0)
+        times = np.insert(times,0,prev_time)
+        freqs = np.insert(freqs,0,0)
 
 
     print 'Generating wave...'
     signal = []
 
-    phase = 0
+    amp = 0.8**(np.arange(nHarmonics)+1)
+    phase = np.zeros(nHarmonics)
     f_prev = 0
     t_prev = 0
     for t,f in zip(times, freqs):
@@ -129,23 +142,46 @@ def melosynth(inputfile, outputfile, useneg, fs):
         nsamples = np.round((t - t_prev) * fs)
 
         if nsamples > 0:
-            # Generate interpolated frequency series
+            # calculate transition length (in samples)
+            translen = float(min(np.round(_translen*fs),nsamples))
+
+            # Generate frequency series
             freq_series = np.ones(nsamples) * f_prev
-            freq_series += np.minimum(np.arange(nsamples)/float(min(np.round(_translen*fs),nsamples)),1) * (f - f_prev)
-            # Compute the phase of each sample
-            phasors = 2 * np.pi * freq_series / float(fs)
-            phases = phase + np.cumsum(phasors)
-            # Compute sample values
-            samples = 0.5 * np.cos(phases)
-            # Update phase
-            phase = phases[-1]
+
+            # Interpolate between non-zero frequencies
+            if f_prev >  0 and f > 0:
+                freq_series += np.minimum(np.arange(nsamples)/translen,1) * (f - f_prev)
+            elif f > 0:
+                freq_series = np.ones(nsamples) * f
+
+            # Repeat for each harmonic
+            samples = np.zeros(nsamples)
+            for h in range(nHarmonics):
+                # Compute the phase of each sample
+                phasors = 2 * np.pi * (h+1) * freq_series / float(fs)
+                phases = phase[h] + np.cumsum(phasors)
+                # Compute sample values and add
+                samples += amp[h] * np.sin(phases)
+                # Update phase
+                phase[h] = phases[-1]
+
+            # Fade in/out and silence
+            if f_prev == 0 and f > 0:
+                samples *= np.minimum(np.arange(nsamples)/translen,1)
+            if f_prev > 0 and f == 0:
+                samples *= np.maximum(1 - (np.arange(nsamples)/translen),0)
+            if f_prev == 0 and f == 0:
+                samples *= 0
+
             # Append samples
             signal.extend(samples)
-        # else:
-        #     print "skippy", t
 
         t_prev = t
         f_prev = f
+
+    # Normalize signal
+    signal = np.asarray(signal)
+    signal *= 0.8 / float(np.max(signal))
 
     print 'Saving wav file...'
     wavwrite(np.asarray(signal),outputfile,fs)
@@ -154,10 +190,11 @@ def melosynth(inputfile, outputfile, useneg, fs):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Synthesize pitch sequence")
     parser.add_argument("inputfile", help="Path to file with pitch values")
-    parser.add_argument("--outputfile", help="Path to output file (wav)")
-    parser.add_argument("--useneg", dest='useneg', action='store_const', const=True, help="Synthesize negative values (unvoiced frames)")
-    parser.add_argument("--fs", help="Specify the sampling frequency for the output (default is 11025 Hz)")
+    parser.add_argument("--output", help="Path to output file (wav)")
+    parser.add_argument("--fs", default=11025, help="Specify the sampling frequency for the output (default is 11025 Hz)")
+    parser.add_argument("--nHarmonics", default=1, help="Number of harmonics (including the fundamental) to use in the synthesis (default is 1)")
+    parser.add_argument("--useneg", default = False, dest='useneg', action='store_const', const=True, help="Synthesize negative values (unvoiced frames)")
 
     args = parser.parse_args()
     if args.inputfile is not None:
-        melosynth(args.inputfile, args.outputfile, args.useneg, args.fs)
+        melosynth(args.inputfile, args.output, args.fs, args.nHarmonics, args.useneg)
