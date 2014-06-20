@@ -6,8 +6,7 @@ Author: Justin Salamon <http://www.justinsalamon.com> <br/>
 Version: 0.1
 
 MeloSynth is a python script to synthesize melodies represented as a sequence of
-pitch (frequency) values. It was written to synthesize the output of the
-MELODIA Melody Extraction Vamp Plugin (<http://mtg.upf.edu/technologies/melodia>),
+pitch (frequency) values. It was written to synthesize the output of the [MELODIA Melody Extraction Vamp Plugin](http://mtg.upf.edu/technologies/melodia),
 but can be used to synthesize any pitch sequence represented as a two-column txt
 or csv file where the first column contains timestamps and the second contains
 the corresponding frequency values in Hertz.
@@ -72,6 +71,10 @@ INSTALLATION
 ============
 Simply download the script and run it from your terminal as instructed above. <br/>
 Dependencies: python (tested on 2.7) and numpy (<http://www.numpy.org/>).
+
+MELODIA USERS
+=============
+In order to use this script to synthesize the output of [MELODIA](http://mtg.upf.edu/technologies/melodia), you need to export it to a CSV file first. If you are using [Sonic Visualiser](http://www.sonicvisualiser.org/), this is done by selecting the pane with the extracted melody, clicking File -> Export Annotation Layer... and choosing CSV as the file type. You can also obtain the CSV directly (and batch process entire folders of files) by using MELODIA with [Sonic Annotator](http://www.vamp-plugins.org/sonic-annotator/) (see instructions in the README file that comes with MELODIA for this).
 
 LICENSE
 =======
