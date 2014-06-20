@@ -11,7 +11,7 @@ but can be used to synthesize any pitch sequence represented as a two-column txt
 or csv file where the first column contains timestamps and the second contains
 the corresponding frequency values in Hertz.
 
-USAGE
+Usage
 =====
 ```
 usage: melosynth.py [-h] [--output OUTPUT] [--fs FS] [--nHarmonics NHARMONICS]
@@ -40,7 +40,7 @@ optional arguments:
                         absolute values (i.e. as voiced frames).
 ```
 
-EXAMPLES
+Examples
 ========
 
 Basic usage, without any options:
@@ -67,16 +67,16 @@ by specifying the --useneg (use negative) option we make the script use the
 absolute value of the frequencies so that negative frequencies are not
 synthesized as silence (which is the default behaviour).
 
-INSTALLATION
+Installation
 ============
 Simply download the script and run it from your terminal as instructed above. <br/>
 Dependencies: python (tested on 2.7) and numpy (<http://www.numpy.org/>).
 
-MELODIA USERS
+Melodia users
 =============
 In order to use this script to synthesize the output of [MELODIA](http://mtg.upf.edu/technologies/melodia), you need to export the melody to a CSV file first. If you are using [Sonic Visualiser](http://www.sonicvisualiser.org/), this is done by selecting the pane with the extracted melody, clicking File -> Export Annotation Layer... and choosing CSV as the file type. You can also obtain the CSV directly (and batch process entire folders of files) by using MELODIA with [Sonic Annotator](http://www.vamp-plugins.org/sonic-annotator/) (see instructions in the README file that comes with MELODIA for this).
 
-LICENSE
+License
 =======
 
 MeloSynth: synthesize a melody <br/>
