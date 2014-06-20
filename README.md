@@ -74,7 +74,7 @@ Dependencies: python (tested on 2.7) and numpy (<http://www.numpy.org/>).
 
 MELODIA USERS
 =============
-In order to use this script to synthesize the output of [MELODIA](http://mtg.upf.edu/technologies/melodia), you need to export it to a CSV file first. If you are using [Sonic Visualiser](http://www.sonicvisualiser.org/), this is done by selecting the pane with the extracted melody, clicking File -> Export Annotation Layer... and choosing CSV as the file type. You can also obtain the CSV directly (and batch process entire folders of files) by using MELODIA with [Sonic Annotator](http://www.vamp-plugins.org/sonic-annotator/) (see instructions in the README file that comes with MELODIA for this).
+In order to use this script to synthesize the output of [MELODIA](http://mtg.upf.edu/technologies/melodia), you need to export the melody to a CSV file first. If you are using [Sonic Visualiser](http://www.sonicvisualiser.org/), this is done by selecting the pane with the extracted melody, clicking File -> Export Annotation Layer... and choosing CSV as the file type. You can also obtain the CSV directly (and batch process entire folders of files) by using MELODIA with [Sonic Annotator](http://www.vamp-plugins.org/sonic-annotator/) (see instructions in the README file that comes with MELODIA for this).
 
 LICENSE
 =======
