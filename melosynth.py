@@ -229,7 +229,7 @@ def melosynth(inputfile, outputfile, fs, nHarmonics, square, useneg):
     logging.info('Generating wave...')
     signal = []
 
-    translen = 0.002 # duration (in seconds) for fade in/out and freq interp
+    translen = 0.010 # duration (in seconds) for fade in/out and freq interp
     phase = np.zeros(nHarmonics) # start phase for all harmonics
     f_prev = 0 # previous frequency
     t_prev = 0 # previous timestamp
