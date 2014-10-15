@@ -30,7 +30,7 @@ optional arguments:
   -h, --help            show this help message and exit
   --output OUTPUT       Path to output wav file. If not specified a file will
                         be created with the same path/name as inputfile but
-                        ending with ".wav".
+                        ending with "_melosynth.wav".
   --fs FS               Sampling frequency for the synthesized file. If not
                         specified the default value of 16000 Hz is used.
   --nHarmonics NHARMONICS
@@ -51,9 +51,9 @@ Basic usage, without any options:
 
 >python melosynth.py ~/Documents/daisy3_melodia.csv
 
-This Will create a file called daisy3_melodia.wav in the same folder as the
-input file (~/Documents/) and use all the default parameter values for the
-synthesis.
+This Will create a file called daisy3_melodia_melosynth.wav in the same folder
+as the input file (~/Documents/) and use all the default parameter values for
+the synthesis.
 
 Advanced usage, including all options:
 
@@ -183,7 +183,8 @@ def melosynth(inputfile, outputfile, fs, nHarmonics, square, useneg):
 
     - outputfile: str
     Path to output wav file. If outputfile is None a file will be
-    created with the same path/name as inputfile but ending with ".wav"
+    created with the same path/name as inputfile but ending with
+    "_melosynth.wav"
 
     - fs : int
     Sampling frequency for the synthesized file.
@@ -207,7 +208,7 @@ def melosynth(inputfile, outputfile, fs, nHarmonics, square, useneg):
     fs = int(float(fs))
     nHarmonics = int(nHarmonics)
     if outputfile is None:
-        outputfile = inputfile[:-3] + "wav"
+        outputfile = inputfile[:-4] + "_melosynth.wav"
 
     # Load pitch sequence
     logging.info('Loading data...')
@@ -293,7 +294,8 @@ if __name__ == "__main__":
                         "pitch sequence")
     parser.add_argument("--output", help="Path to output wav file. If "
                         "not specified a file will be created with the same "
-                        "path/name as inputfile but ending with \".wav\".")
+                        "path/name as inputfile but ending with "
+                        "\"_melosynth.wav\".")
     parser.add_argument("--fs", default=16000, help="Sampling frequency for the"
                         "synthesized file. If not specified the default value "
                         "of 16000 Hz is used.")
