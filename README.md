@@ -15,7 +15,7 @@ Usage
 =====
 ```
 usage: melosynth.py [-h] [--output OUTPUT] [--fs FS] [--nHarmonics NHARMONICS]
-                    [--square] [--useneg]
+                    [--square] [--useneg] [--batch]
                     inputfile
 
 positional arguments:
@@ -25,7 +25,7 @@ optional arguments:
   -h, --help            show this help message and exit
   --output OUTPUT       Path to output wav file. If not specified a file will
                         be created with the same path/name as inputfile but
-                        ending with ".wav".
+                        ending with "_melosynth.wav".
   --fs FS               Sampling frequency for the synthesized file. If not
                         specified the default value of 16000 Hz is used.
   --nHarmonics NHARMONICS
@@ -35,9 +35,14 @@ optional arguments:
   --square              Converge to square wave instead of sawtooth as the
                         number of harmonics is increased.
   --useneg              By default, negative frequency values (unvoiced
-                        frames) are synthesized as silence. Setting the useneg
-                        option will synthesize these frames using their
-                        absolute values (i.e. as voiced frames).
+                        frames) are synthesized as silence. Setting the
+                        --useneg option will synthesize these frames using
+                        their absolute values (i.e. as voiced frames).
+  --batch               Treat inputfile as a folder and batch process every
+                        file within this folder that ends with .csv or .txt.
+                        If --output is specified it is expected to be a folder
+                        too. If --output is not specified, all synthesized
+                        files will be saved into the input folder.
 ```
 
 Examples
@@ -52,7 +57,7 @@ This will create a file called daisy3_melodia.wav in the same folder as the
 input file (~/Documents/) and use all the default parameter values for the
 synthesis.
 
-Advanced usage, including all options:
+Advanced usage, including options:
 ```
 >python melosynth.py ~/Documents/daisy3_melodia.csv --output ~/Music/mynewfile.wav --fs 44100 --nHarmonics 10 --square --useneg
 ```
@@ -66,6 +71,16 @@ specify the --square option, it will converge to a square wave instead. Finally,
 by specifying the --useneg (use negative) option we make the script use the
 absolute value of the frequencies so that negative frequencies are not
 synthesized as silence (which is the default behaviour).
+
+Batch processing:
+```
+>python melosynth.py ~/Documents/melodia_pitch/ --output ~/Documents/melodia_synth/ --batch
+```
+
+This will batch process all files ending with .txt or .csv in the melodia_pitch
+folder, and save the synthesized melodies into the melodia_synth folder. Every
+synthesized file will have the same name as its corresponding input file but
+with the ending _melosynth.wav.
 
 Installation
 ============
