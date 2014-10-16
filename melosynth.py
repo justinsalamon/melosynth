@@ -20,7 +20,7 @@ the corresponding frequency values in Hertz.
 @section USAGE
 
 usage: melosynth.py [-h] [--output OUTPUT] [--fs FS] [--nHarmonics NHARMONICS]
-                    [--square] [--useneg]
+                    [--square] [--useneg] [--batch]
                     inputfile
 
 positional arguments:
@@ -40,9 +40,14 @@ optional arguments:
   --square              Converge to square wave instead of sawtooth as the
                         number of harmonics is increased.
   --useneg              By default, negative frequency values (unvoiced
-                        frames) are synthesized as silence. Setting the useneg
-                        option will synthesize these frames using their
-                        absolute values (i.e. as voiced frames).
+                        frames) are synthesized as silence. Setting the
+                        --useneg option will synthesize these frames using
+                        their absolute values (i.e. as voiced frames).
+  --batch               Treat inputfile as a folder and batch process every
+                        file within this folder that ends with .csv or .txt.
+                        If --output is specified it is expected to be a folder
+                        too. If --output is not specified, all synthesized
+                        files will be saved into the input folder.
 
 
 @section EXAMPLES
@@ -51,11 +56,11 @@ Basic usage, without any options:
 
 >python melosynth.py ~/Documents/daisy3_melodia.csv
 
-This Will create a file called daisy3_melodia_melosynth.wav in the same folder
+This will create a file called daisy3_melodia_melosynth.wav in the same folder
 as the input file (~/Documents/) and use all the default parameter values for
 the synthesis.
 
-Advanced usage, including all options:
+Advanced usage, including options:
 
 >python melosynth.py ~/Documents/daisy3_melodia.csv --output ~/Music/mynewfile.wav --fs 44100 --nHarmonics 10 --square --useneg
 
@@ -68,6 +73,15 @@ specify the --square option, it will converge to a square wave instead. Finally,
 by specifying the --useneg (use negative) option we make the script use the
 absolute value of the frequencies so that negative frequencies are not
 synthesized as silence (which is the default behaviour).
+
+Batch processing:
+
+>python melosynth.py ~/Documents/melodia_pitch/ --output ~/Documents/melodia_synth/ --batch
+
+This will batch process all files ending with .txt or .csv in the melodia_pitch
+folder, and save the synthesized melodies into the melodia_synth folder. Every
+synthesized file will have the same name as its corresponding input file but
+with the ending _melosynth.wav.
 
 @section INSTALLATION
 Simply download the script and run it from your terminal as instructed above.
@@ -91,7 +105,7 @@ You should have received a copy of the GNU General Public License along with
 this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-import argparse, os, wave, logging
+import argparse, os, wave, logging, glob
 import numpy as np
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 
@@ -171,6 +185,60 @@ def loadmel(inputfile, delimiter=None):
     times = data[0]
     freqs = data[1]
     return times, freqs
+
+
+def melosynth_batch(inputfolder, outputfolder, fs, nHarmonics, square, useneg):
+    '''
+    Run melosynth on every .txt and .csv file in inputfolder, and save the
+    synthesized files to outputfolder. If outputfolder is None, the files are
+    saved to intputfolder instead.
+
+    :parameters:
+    - inputfolder : str
+    Path to input folder containing all the files with pitch sequences.
+
+    - outputfolder: str
+    Path to output folder. If outputfolder is None all files will be saved to
+    inputfolder. In either case, each output file will be created with the same
+    name as its corresponding inputfile but ending with "_melosynth.wav"
+
+    - fs : int
+    Sampling frequency for the synthesized file.
+
+    - nHarmonics : int
+    Number of harmonics (including the fundamental) to use in the synthesis
+    (default is 1). As the number is increased the wave will become more
+    sawtooth-like.
+
+    - square : bool
+    When set to true, the waveform will converge to a square wave instead of
+    a sawtooth as the number of harmonics is increased.
+
+    - useneg : bool
+    By default, negative frequency values (unvoiced frames) are synthesized as
+    silence. If useneg is set to True, these frames will be synthesized using
+    their absolute values (i.e. as voiced frames).
+    '''
+
+    # Load all files in input folder that end with .txt or .csv
+    inputfiles = glob.glob(os.path.join(inputfolder, "*.txt"))
+    inputfiles.extend(glob.glob(os.path.join(inputfolder, "*.csv")))
+
+    for inputfile in inputfiles:
+
+        if outputfolder is not None:
+            outfolder = outputfolder
+            if not os.path.isdir(outfolder):
+                os.mkdir(outfolder)
+        else:
+            outfolder = inputfolder
+
+        outputfilename = os.path.basename(inputfile)[:-4] + "_melosynth.wav"
+        outputfile = os.path.join(outfolder, outputfilename)
+        logging.info("Processing: " + inputfile)
+        logging.info("Target    : " + outputfile)
+
+        melosynth(inputfile, outputfile, fs, nHarmonics, square, useneg)
 
 
 def melosynth(inputfile, outputfile, fs, nHarmonics, square, useneg):
@@ -296,9 +364,9 @@ if __name__ == "__main__":
                         "not specified a file will be created with the same "
                         "path/name as inputfile but ending with "
                         "\"_melosynth.wav\".")
-    parser.add_argument("--fs", default=16000, help="Sampling frequency for the"
-                        "synthesized file. If not specified the default value "
-                        "of 16000 Hz is used.")
+    parser.add_argument("--fs", default=16000, help="Sampling frequency for "
+                        "the synthesized file. If not specified the default "
+                        "value of 16000 Hz is used.")
     parser.add_argument("--nHarmonics", default=1, help="Number of harmonics "
                         "(including the fundamental) to use in the synthesis "
                         "(default is 1). As the number is increased the wave "
@@ -313,8 +381,20 @@ if __name__ == "__main__":
                         "synthesized as silence. Setting the --useneg option "
                         "will synthesize these frames using their absolute "
                         "values (i.e. as voiced frames).")
+    parser.add_argument("--batch", default=False, dest='batch',
+                        action='store_const', const=True, help="Treat "
+                        "inputfile as a folder and batch process every file "
+                        "within this folder that ends with .csv or .txt. If "
+                        "--output is specified it is expected to be a folder "
+                        "too. If --output is not specified, all synthesized "
+                        "files will be saved into the input folder.")
 
     args = parser.parse_args()
     if args.inputfile is not None:
-        melosynth(args.inputfile, args.output, args.fs, args.nHarmonics,
-                  args.square, args.useneg)
+
+        if args.batch:
+            melosynth_batch(args.inputfile, args.output, args.fs,
+                            args.nHarmonics, args.square, args.useneg)
+        else:
+            melosynth(args.inputfile, args.output, args.fs, args.nHarmonics,
+                      args.square, args.useneg)
