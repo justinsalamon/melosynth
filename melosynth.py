@@ -4,7 +4,7 @@
 """
 @file melosynth.py
 @author  Justin Salamon <www.justinsalamon.com>
-@version 0.1
+@version 0.1.0
 
 @section DESCRIPTION
 
@@ -108,6 +108,9 @@ this program. If not, see <http://www.gnu.org/licenses/>.
 import argparse, os, wave, logging, glob
 import numpy as np
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
+
+short_version = '0.1'
+version = '0.1.0'
 
 
 def wavwrite(x, filename, fs=44100, N=16):
@@ -357,7 +360,8 @@ def melosynth(inputfile, outputfile, fs, nHarmonics, square, useneg):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Synthesize pitch sequence.")
+    parser = argparse.ArgumentParser(description="Melosynth {}. Synthesize "
+                        "a pitch sequence.".format(version))
     parser.add_argument("inputfile", help="Path to input file containing the "
                         "pitch sequence")
     parser.add_argument("--output", help="Path to output wav file. If "
