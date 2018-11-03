@@ -4,7 +4,7 @@
 """
 @file melosynth.py
 @author  Justin Salamon <www.justinsalamon.com>
-@version 0.1.0
+@version 0.1.1
 
 @section DESCRIPTION
 
@@ -110,7 +110,7 @@ import numpy as np
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 
 short_version = '0.1'
-version = '0.1.0'
+version = '0.1.1'
 
 
 def wavwrite(x, filename, fs=44100, N=16):

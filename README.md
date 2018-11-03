@@ -3,7 +3,7 @@ MeloSynth
 
 MeloSynth: synthesize a melody. <br/>
 Author: Justin Salamon <http://www.justinsalamon.com> <br/>
-Version: 0.1
+Version: 0.1.1
 
 MeloSynth is a python script to synthesize melodies represented as a sequence of
 pitch (frequency) values. It was written to synthesize the output of the [MELODIA Melody Extraction Vamp Plugin](http://mtg.upf.edu/technologies/melodia),
@@ -95,7 +95,7 @@ License
 =======
 
 MeloSynth: synthesize a melody <br/>
-Copyright (C) 2014 Justin Salamon.
+Copyright (C) 2018 Justin Salamon.
 
 MeloSynth is free software: you can redistribute it and/or modify it under the
 terms of the GNU General Public License as published by the Free Software
