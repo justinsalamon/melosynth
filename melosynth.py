@@ -135,10 +135,10 @@ def wavwrite(x, filename, fs=44100, N=16):
     maxVol = 2**15-1.0 # maximum amplitude
     x = x * maxVol # scale x
     # convert x to string format expected by wave
-    signal = "".join((wave.struct.pack('h', item) for item in x))
+    signal = b"".join((wave.struct.pack('h', int(item)) for item in x))
     wv = wave.open(filename, 'w')
     nchannels = 1
-    sampwidth = N / 8 # in bytes
+    sampwidth = int(N / 8) # in bytes
     framerate = fs
     nframe = 0 # no limit
     comptype = 'NONE'
@@ -308,7 +308,7 @@ def melosynth(inputfile, outputfile, fs, nHarmonics, square, useneg):
     for t, f in zip(times, freqs):
 
         # Compute number of samples to synthesize
-        nsamples = np.round((t - t_prev) * fs)
+        nsamples = int(np.round((t - t_prev) * fs))
 
         if nsamples > 0:
             # calculate transition length (in samples)
